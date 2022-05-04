@@ -1,0 +1,28 @@
+server:
+  port: 9090
+  # 单位 KB ,解决异常：Request header is too large
+  max-http-header-size: 100000
+
+spring:
+  #解决swagger问题
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/standard_manage?serverTimezone=GMT%2b8
+    username: root
+    password: magic123
+mybatis:
+  mapper-locations: classpath:mapper/*.xml  #扫描所有mybatis的xml文件
+#已有MybatisPlus，这里失效，在下面实现
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #可以在run时查看运行的sql语句
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+#文件存储
+files:
+  upload:
+    path: G:/0-web_study/file/

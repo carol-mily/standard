@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.standard_manage_back.mapper.ItemMapper">
+
+    <select id="findByTableId" resultType="com.example.standard_manage_back.entity.Item">
+        select sys_item.*,sys_type.name as typeName,sys_type.max_len as maxLen,sys_type.min_len as minLen from sys_item
+        left join sys_type on sys_item.type_id = sys_type.id
+        <where>
+            sys_item.table_id = #{tableId}
+        </where>
+    </select>
+</mapper>

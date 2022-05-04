@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.standard_manage_back.mapper.MessageMapper">
+    <insert id="sendMessage">
+        insert into msg_receiver(message_id,user_phone,state,cre_time) values(#{id},#{phone},0,#{time})
+    </insert>
+
+    <update id="setReadBatch">
+        <foreach collection="ids" item="item" index="index" open="" close="" separator=";">
+            update msg_receiver
+            <set>
+                state=1
+            </set>
+            where message_id = ${item}
+            and user_phone = #{phone}
+        </foreach>
+    </update>
+
+    <update id="setRead">
+        update msg_receiver
+        <set>
+            state=1
+        </set>
+        where message_id = #{id}
+        and user_phone = #{phone}
+    </update>
+
+    <delete id="deleteRec">
+        delete from msg_receiver
+        where message_id = #{id}
+        and user_phone = #{phone}
+    </delete>
+
+    <delete id="deleteRecBatch">
+        delete from msg_receiver
+        where user_phone = #{phone}
+        and message_id in
+        <foreach collection="list" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSend">
+        delete from msg_receiver
+        where message_id = #{id}
+    </delete>
+
+    <delete id="deleteSendBatch">
+        delete from msg_receiver
+        where message_id in
+        <foreach collection="list" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getReceive" resultType="com.example.standard_manage_back.entity.Message">
+        select sys_message.*,sys_user.name as sname,msg_receiver.user_phone as uphone,msg_receiver.state as state,msg_receiver.cre_time as cre_time from sys_message
+        left join msg_receiver
+        on sys_message.id = msg_receiver.message_id
+        left join sys_user
+        on sys_message.sphone=sys_user.phone
+        <where>
+            msg_receiver.user_phone = #{uphone}
+            <if test="type != 2 and type != '2'">
+                and sys_message.type = #{type}
+            </if>
+            <if test="state != 2 and state != '2'">
+                and msg_receiver.state = #{state}
+            </if>
+        </where>
+        order by cre_time desc
+    </select>
+
+    <select id="getSend" resultType="com.example.standard_manage_back.entity.Message">
+        select sys_message.*,sys_user.name as sname from sys_message
+        left join sys_user
+        on sys_message.sphone=sys_user.phone
+        <where>
+            sys_message.type = 0 and sys_message.sphone = #{sphone}
+        </where>
+        order by id desc
+    </select>
+</mapper>

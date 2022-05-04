@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.standard_manage_back.mapper.StandardMapper">
+    <!--用于将数据库查出的字段封装成对象-->
+    <resultMap id="findById" type="com.example.standard_manage_back.entity.Standard">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="ename" property="ename"/>
+        <result column="mphone" property="mphone"/>
+        <result column="state" property="state"/>
+        <result column="creday" property="creday"/>
+        <result column="subday" property="subday"/>
+        <result column="level_id" property="levelId"/>
+        <result column="description" property="description"/>
+        <result column="mname" property="mname"/>
+        <!--关联-->
+        <collection property="editors" javaType="java.util.ArrayList" ofType="com.example.standard_manage_back.entity.User">
+            <result column="uname" property="name"/>
+            <result column="uphone" property="phone"/>
+        </collection>
+    </resultMap>
+
+    <select id="findPage" resultType="com.example.standard_manage_back.entity.Standard">
+        select sys_standard.*,sys_user.name as mname from sys_standard,sys_user
+        <where>
+            sys_standard.mphone = sys_user.phone
+            <if test="levelid != null">
+                and sys_standard.level_id = #{levelid}
+            </if>
+            <if test="name != null and name != ''">
+                and sys_standard.name like concat('%',#{name},'%')
+            </if>
+            <if test="state != null">
+                and sys_standard.state = #{state}
+            </if>
+        </where>
+    </select>
+
+    <select id="findByMphone" resultType="com.example.standard_manage_back.entity.Standard">
+        select sys_standard.*,sys_user.name as mname from sys_standard,sys_user
+        <where>
+            sys_standard.mphone = #{mphone}
+            and sys_standard.mphone = sys_user.phone
+            <if test="name != null and name != ''">
+                and sys_standard.name like concat('%',#{name},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findByUphone" resultType="com.example.standard_manage_back.entity.Standard">
+        select sys_standard.*,manager.name as mname from sys_standard
+        left join stan_editor
+        on sys_standard.id = stan_editor.standard_id
+        left join sys_user
+        on stan_editor.user_phone = sys_user.phone
+        left join sys_user manager
+        on sys_standard.mphone = manager.phone
+        <where>
+            sys_user.phone = #{uphone}
+            and sys_standard.mphone != #{uphone}
+            <if test="name != null and name != ''">
+                and sys_standard.name like concat('%',#{name},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findById" resultMap="findById">
+        select sys_standard.*,manager.name as mname,stan_editor.*,sys_user.phone as uphone,sys_user.name as uname from sys_standard
+        left join stan_editor
+        on sys_standard.id = stan_editor.standard_id
+        left join sys_user
+        on stan_editor.user_phone = sys_user.phone
+        left join sys_user manager
+        on sys_standard.mphone = manager.phone
+        <where>
+            sys_standard.id = #{id}
+        </where>
+        order by cre_time asc
+    </select>
+
+    <select id="isExisted" resultType="java.lang.Integer">
+        select count(*) from stan_editor
+        <where>
+            stan_editor.standard_id = #{stanId} and stan_editor.user_phone = #{userPhone}
+        </where>
+    </select>
+
+    <!--    <select id="findById" resultType="com.example.standard_manage_back.entity.Standard">-->
+<!--        select sys_standard.*,sys_user.name as mname from sys_standard,sys_user-->
+<!--        <where>-->
+<!--            sys_standard.id = #{id}-->
+<!--            and sys_standard.mphone = sys_user.phone-->
+<!--        </where>-->
+<!--    </select>-->
+
+    <insert id="addEditor">
+        insert into stan_editor(standard_id,user_phone,cre_time) values(#{stanId},#{userPhone},#{time})
+    </insert>
+
+    <delete id="deleteEditor">
+        delete from stan_editor where standard_id=#{stanId} and user_phone=#{userPhone}
+    </delete>
+
+    <delete id="deleteEditors">
+        delete from stan_editor where standard_id=#{stanId}
+    </delete>
+</mapper>
